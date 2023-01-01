@@ -10,7 +10,7 @@ import telegram
 import ccxt
 import module
 """
-Binance/detect_bb_exceed.py
+Binance/alarm.py
 * Date: 2022. 9. 11.
 * Author: Jeon Won
 * Func: 비트코인 차트의 보조지표(거래량, RSI, 캔들길이, 볼린저 밴드) 값을 실시간 계산하여 롱숏 포지션 진입 시점이 다가왔다고 예상되었을 때 알림을 보냄
@@ -111,7 +111,7 @@ while True:
             # 알림 조건에 부합하면
             if(is_alert):
                 # 메시지 생성
-                message_title = f"Binance {ticker} {INTERVAL}분봉 변동 알림"
+                message_title = f"Binance {ticker} {TICKER_INTERVAL} 변동 알림"
                 message_volume = f"- 거래량: 평균 {round(volume / volume_mean, 2)}배"
                 message_rsi = f"- RSI: {round(rsi, 2)}"
                 message_candle_len = f"- 캔들길이: 평균 {round(candle_len / candle_len_mean, 2)}배"
@@ -134,23 +134,21 @@ while True:
 
                 # 알림 보낸 ticker 리스트에 추가하여 다음 봉 갱신 전까지 알림을 보내지 못하도록 함
                 notified_tickers.append(ticker)
-                
-        # 다음 봉 갱신 되면 알림 보냈던 ticker 리스트 초기화
-        now = datetime.datetime.now()
-
+          
         # ticker 리스트를 초기화 조건 계산
+        now = datetime.datetime.now()
         list_clear_condition = False
         if(TICKER_INTERVAL in ['1m', '3m', '5m', '15m', '30m']):  # 분봉: 현재 시간(분)이 INTERVAL로 나누어 떨어지는지 확인
             list_clear_condition = True if divmod(now.minute, INTERVAL)[1] == 0 else False
         elif(TICKER_INTERVAL == '1h'):  # 1시간봉: 현재 시간(분)이 0분인지 확인
             list_clear_condition = True if now.minute == 0 else False
         elif(TICKER_INTERVAL in ['4h', '12h']):  # 4시간봉: 1, 5, 9, 13, 17, 21시마다 갱신되도록 현재 시간에 3을 더해서 4로 나누어 떨어지는지 확인. 12시간봉도 비슷함.
-            list_clear_condition = True if divmod(now.hour + 3, INTERVAL)[1] else False
+            list_clear_condition = True if divmod(now.hour + 3, INTERVAL)[1] == 0 else False
         else:
             list_clear_condition = False
         
-        # ticker 리스트 초기화 조건에 부합하고 현재 시간(초)가 0~5초 사이면 ticker 리스트 초기화
-        if(list_clear_condition and now.second > 0 and now.second < 5):
+        # ticker 리스트 초기화 조건에 부합하고 현재 시간(분)이 0분, 시간(초)가 0~5초 사이면 ticker 리스트 초기화
+        if(list_clear_condition and now.minute == 0 and now.second > 0 and now.second < 5):
             notified_tickers.clear()
             logger.info(f"[INFO] {datetime.datetime.now()} ticker 리스트 초기화 완료")
             time.sleep(5)

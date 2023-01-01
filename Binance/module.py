@@ -1,5 +1,41 @@
 import numpy as np
 import pandas as pd
+import ccxt
+from pprint import pprint
+
+def get_vol_top_tickers(top_num=0):
+    """바이낸스의 최근 24시간 기준 거래량 높은 코인들을 얻어옵니다. 바이낸스 ticker 종류가 워낙 많아 오래 걸림...
+
+    Args: top_num (거래량 상위 몇 개의 코인들을 얻어올 것인가?)
+    
+    Returns: list (잘못된 매개변수를 입력한 경우 None)
+    """
+
+    binance = ccxt.binance()
+    markets = binance.load_markets()
+
+    # USDT ticker list 저장
+    tickers = []
+    for ticker in markets:
+        if(ticker[-4:] == "USDT"):
+            tickers.append(ticker)
+    
+    # 24시간 내 거래량(USDT) 데이터 저장
+    usdt_vol_24h = []
+    for ticker in tickers:
+        t = binance.fetch_ticker(ticker)
+        usdt_vol_24h.append([ticker, t["quoteVolume"]])
+
+    # 거래량 데이터를 내림차순으로 정렬
+    sorted_usdt_vol_24h = sorted(usdt_vol_24h, key=(lambda x: x[1]), reverse=True)
+    
+    if(top_num == 0):   # top_num 값이 0이면 모든 리스트 반환
+        return sorted_usdt_vol_24h
+    elif(top_num > 0):  # top_num 값이 0보다 크면 상위 리스트 반환
+        return sorted_usdt_vol_24h[:top_num]
+    else:
+        return
+
 
 def get_ccxt_volume_mean(ohlcv_list: list):
     """ccxt의 fetch_ohlcv() 함수가 반환하는 list 객체를 받아 평균 거래량을 반환합니다. 
