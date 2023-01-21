@@ -3,6 +3,7 @@ import time
 import datetime
 import statistics
 import logging
+import threading
 from playsound import playsound
 """
 Binance/vol_scan.py
@@ -16,7 +17,7 @@ TICKER = "BTC/USDT" # 거래량을 탐지할 바이낸스 거래소 Ticker
 INTERVAL = "15m"    # 캔들 유형
 COUNT = 60          # 최근 탐지한 거래랑 몇 건으로 평균을 계산할 것인가?
 VOL_MEAN = 10       # 거래량 평균 몇 배 이상 시 알림을 줄 것인가?
-SLEEP_TIME = 3      # 탐지 간격(초)
+SLEEP_TIME = 1      # 탐지 간격(초)
 IS_ALARM = True     # 소리 알림 여부
 IS_LOGGING = True   # 로그 기록 여부
 
@@ -39,7 +40,7 @@ vol_list = [] # 스캔한 거래량을 COUNT개 만큼 저장할 리스트
 
 print(f"Binance {TICKER} {INTERVAL} 캔들 거래량을 {SLEEP_TIME}초 간격으로 탐지합니다.")
 print(f"거래량이 평균 대비 {VOL_MEAN}배 터지면 알림이 발생합니다.")
-print("출력 값은 '날짜시간: SLEEP_TIME초간_발생한_거래량 (가격변동율) / 최근_COUNT건의_평균거래량' 입니다.")
+print(f"출력 값은 '날짜시간: {SLEEP_TIME}초간_발생한_거래량 (가격변동율) / 최근_{COUNT}건의_평균거래량' 입니다.")
 
 while True:
   # 현재 가격과 거래량 얻어오기
@@ -63,17 +64,17 @@ while True:
   current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
   price_per = round((ohlcv[0][4] - ohlcv[0][1]) / ohlcv[0][1] * 100, 2)
   
-  ## 거래량 증가분이 거래량 증가분 평균보다 VOL_MEAN배 높으면 🌟을 붙이고 알람 처리
+  ## 거래량 증가분이 거래량 증가분 평균보다 VOL_MEAN배 높으면 🌟을 붙이고 
   msg_star = "🌟" if vol_diff >= vol_mean * VOL_MEAN else ""
   if(IS_ALARM and msg_star == "🌟"):
-    playsound("alarm.mp3")
-
-  ## 메시지 & 로그 형식: [현재시간: 거래량_증가분 (가격_증감분) / 거래량_증가분_평균 (🌟)]
-  message = f"{current_time}: {vol_diff} ({price_per}%) / {vol_mean} {msg_star}"
-  if(IS_LOGGING):
-    logger.info(message)
-  else:
-    print(message)
+    # 알람 처리
+    threading.Thread(target=playsound, args=("alarm.mp3",), daemon=True).start()
+    # 메시지 & 로그 형식: [현재시간: 거래량_증가분 (가격_증감분) / 거래량_증가분_평
+    message = f"{current_time}: {vol_diff} ({price_per}%) / {vol_mean} {msg_star}"
+    if(IS_LOGGING):
+      logger.info(message)
+    else:
+      print(message)
 
   # 현재 가격 및 거래량을 Old 변수에 대입
   price_old = price_new
