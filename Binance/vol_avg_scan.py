@@ -6,20 +6,20 @@ import logging
 import threading
 from playsound import playsound
 """
-Binance/vol_scan.py
+Binance/vol_avg_scan.py
 * Date: 2023. 1. 16.
 * Author: Jeon Won
-* Func: Binance 가상화폐의 거래량을 일정 간격 동안 스캔하여 거래량이 기준 이상 터졌을 때 알림
+* Func: Binance 가상화폐의 거래량을 일정 시간(간격) 동안 스캔하여 거래량이 기준 이상 터졌을 때 알림
 * Usage: 설정 값 입력 후 `python3 vol_scan.py` 명령어 실행
 """
 
-TICKER = "BTC/USDT" # 거래량을 탐지할 바이낸스 거래소 Ticker
-INTERVAL = "15m"    # 캔들 유형
-COUNT = 60          # 최근 탐지한 거래랑 몇 건으로 평균을 계산할 것인가?
-VOL_MEAN = 10       # 거래량 평균 몇 배 이상 시 알림을 줄 것인가?
-SLEEP_TIME = 1      # 탐지 간격(초)
-IS_ALARM = True     # 소리 알림 여부
-IS_LOGGING = True   # 로그 기록 여부
+TICKER = "BTC/USDT"  # 거래량을 탐지할 바이낸스 거래소 Ticker
+INTERVAL = "15m"     # 캔들 유형
+COUNT = 60           # 최근 탐지한 거래랑 몇 건으로 평균을 계산할 것인가?
+VOL_MEAN = 10        # 거래량 평균 몇 배 이상 시 알림을 줄 것인가?
+SLEEP_TIME = 1       # 탐지 간격(초)
+IS_ALARM = True      # 소리 알림 여부
+IS_LOGGING = True    # 로그 기록 여부
 
 # 로그 설정
 if(IS_LOGGING):
