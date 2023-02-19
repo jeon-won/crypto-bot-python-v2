@@ -6,12 +6,14 @@
 
 **테스트 중인 코드이므로 정상적인 실행을 보장하지 않으며, 이 프로그램을 사용하여 발생하는 손해에 대한 책임은 사용자 본인에게 있습니다.**
 
+
 ## 사용한 주요 라이브러리
 * ccxt: 바이낸스 API를 편하게 사용하기 위한 라이브러리
 * python-telegram-bot: 텔레그램 메시지 전송을 위한 라이브러리
 * numpy 및 pandas: 배열 처리를 쉽게 하기 위한 라이브러리
 * python-dotenv: 환경변수(.env)를 사용하기 위한 라이브러리
 * playsound: 사운드 재생을 위한 라이브러리
+
 
 ## 사용법(Binance)
 
@@ -68,21 +70,23 @@ SLEEP_TIME = 1
 
 프로그램을 실행하면 logs 폴더에 프로그램 작동 및 알림 이력 로그를 기록합니다.
 
-### 순간 거래량 탐지: vol_val_scan.py
 
-`Binance/vol_val_scan.py` 파일을 열어 설정을 위한 상수 값을 입력합니다. SLEEP_TIME 값이 1이면 1초 간격으로 거래량이 얼마나 발생했는지 계산합니다. VOL_STANDARD 값이 100이면 거래량이 100 이상 발생 시 알림을 보냅니다.
+### 순간 거래량 탐지: vol_scan.py
+
+`Binance/vol_scan.py` 파일을 열어 설정을 위한 상수 값을 입력합니다. SLEEP_TIME 값이 1이면 1초 간격으로 거래량이 얼마나 발생했는지 계산합니다. VOL_STANDARD 값이 100이면 거래량이 100 이상 발생 시 알림을 보냅니다.
 
 ```python
-TICKER = "BTC/USDT"    # 거래량을 탐지할 바이낸스 거래소 Ticker
-INTERVAL = "15m"       # 캔들 유형
-SLEEP_TIME = 1         # 탐지 간격(초)
-VOL_STANDARD = 100     # 거래량 기준치(거래량이 얼마 이상 발생했을 때 알림을 줄 것인가?)
-IS_ALARMING = True     # 소리 알림 여부
-IS_TELEGRAMING = True  # 텔레그램 알림 여부
-IS_LOGGING = True      # 로그 기록 여부
+TICKER = "BTC/USDT"     # 거래량을 탐지할 바이낸스 거래소 Ticker
+INTERVAL = "15m"        # 캔들 유형
+SLEEP_TIME = 1          # 탐지 간격(초)
+COUNT = 60              # 최근 탐지한 거래랑 몇 건으로 평균을 계산할 것인가?
+VOL_VAL_STANDARD = 100  # 거래량 기준치(거래량이 얼마 이상 발생했을 때 알림을 줄 것인가?)
+IS_ALARMING = True      # 소리 알림 여부
+IS_TELEGRAMING = False  # 텔레그램 알림 여부
+IS_LOGGING = True       # 로그 기록 여부
 ```
 
-상수 값을 입력한 후 `nohup python3 Binance/vol_val_scan.py &` 명령어를 실행하여 백그라운드로 작동시킵니다.
+상수 값을 입력한 후 `nohup python3 Binance/vol_scan.py &` 명령어를 실행하여 백그라운드로 작동시킵니다.
 
 IS_LOGGING 값이 True이면 Binance 폴더에 logs 폴더를 만들어놔야 하며, logs 폴더에 거래량 알림 발생 로그를 기록합니다.
 
