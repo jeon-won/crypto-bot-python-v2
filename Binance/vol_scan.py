@@ -101,9 +101,10 @@ while True:
       if(IS_ALARMING):
         threading.Thread(target=playsound, args=("alarm.mp3",), daemon=True).start()
       if(IS_TELEGRAMING):
-        bot.sendMessage(TELEGRAM_CHAT_ID, text=push_msg)
+        bot.sendMessage(TELEGRAM_CHAT_ID, text=f"{push_msg}\n{vol_avg_msg}")
       if(IS_LOGGING):
-        logger.info(push_msg)
+        logger.info(f"{push_msg}\n{vol_avg_msg}")
+        logger.info("--------------------------------------------------")
     
     # 콘솔 메시지 출력
     print(console_msg)
