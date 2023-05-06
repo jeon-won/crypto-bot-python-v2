@@ -1,8 +1,8 @@
-import os
 import ccxt
 import time
-import datetime
 import threading
+import logging
+from datetime import datetime
 from playsound import playsound
 from dotenv import load_dotenv
 """
@@ -21,17 +21,35 @@ class Colors:
 
 # 대충 상수...
 load_dotenv()        ## 환경변수 값 가져오기
-TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")      ## 텔레그렘 봇 토큰
-TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")  ## 텔레그램 봇 아이디
 TICKER = "BTC/USDT"  ## 오더북을 탐지할 바이낸스 Ticker
 COUNT = 250          ## 조사할 호가 개수
 SLEEP_TIME = 0.5     ## 탐지 간격(초)
-ALARM_STANDARD = 85  ## 알람 기준 퍼센트(매수/메도 물량 중 한 쪽이 이 값 이상이면 알림)
-COLOR_STANDARD = 70  ## 컬러 표시 기준 퍼센트(매수/매도 물량 중 한 쪽이 이 값 이상이면 콘솔 창에 컬러 표시)
+ALARM_STANDARD = 80  ## 알람 기준 퍼센트(매수/메도 물량 중 한 쪽이 이 값 이상이면 알림)
+COLOR_STANDARD = 80  ## 컬러 표시 기준 퍼센트(매수/매도 물량 중 한 쪽이 이 값 이상이면 콘솔 창에 컬러 표시)
+IS_ALARMING = True
+IS_LOGGING = True
+current_date = datetime.now()
+LOG_PATH = f"./logs/{current_date.year}-{current_date.month}_Orderbook.log"
 
+# 초기화
 exchange = ccxt.binance()
+old_asks = 0
+old_bids = 0
+
 print(f"Binance {TICKER} 오더북(호가)를 {SLEEP_TIME}초 간격으로 조사합니다.")
 print(f"매수/매도 호가 물량이 {ALARM_STANDARD}% 이상인 경우 알림을 보냅니다.")
+print("-----------------------------------------------------------")
+
+# 로그 설정
+if(IS_LOGGING):
+  log_path = LOG_PATH
+  logger = logging.getLogger(__name__)
+  streamHandler = logging.StreamHandler()
+  fileHandler = logging.FileHandler(log_path)
+  logger.addHandler(streamHandler)
+  logger.addHandler(fileHandler)
+  logger.setLevel(level=logging.INFO)
+  print(f"{log_path} 경로에 로그를 기록합니다.")
 print("-----------------------------------------------------------")
 
 while(True):
@@ -47,20 +65,16 @@ while(True):
   sum_asks = round(sum_asks, 3)
   sum_bids = round(sum_bids, 3)
 
-  # 매도호가 비율과 매수호가 비율 계산
-  per_asks =  round(sum_asks / (sum_asks + sum_bids) * 100, 1)
-  per_bids =  round(sum_bids / (sum_asks + sum_bids) * 100, 1)
+  # 매도/매수호가 비율 계산
+  per_asks = round(sum_asks / (sum_asks + sum_bids) * 100, 1)
+  per_bids = round(sum_bids / (sum_asks + sum_bids) * 100, 1)
 
   # 알림 조건: 매도/매수 호가 비율 중 하나가 ALARM_STANDARD 이상인 경우
-  star = ""
   alarm_condition = (per_asks >= ALARM_STANDARD and per_bids < 100 - ALARM_STANDARD) or (per_bids >= ALARM_STANDARD and per_asks < 100 - ALARM_STANDARD)
-  if(alarm_condition):
-     threading.Thread(target=playsound, args=("alarm.mp3",), daemon=True).start()
-     star = "🌟"
-  
-  current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+  if(alarm_condition and IS_ALARMING):
+    threading.Thread(target=playsound, args=("alarm.mp3",), daemon=True).start()
 
-  # 컬러 표시 조건: 매도/매수 호가 비율 중 하나가 COLOR_STANDARD 값 이상인 경우
+  # 컬러 표시: 매도/매수 호가 비율 중 하나가 COLOR_STANDARD 값 이상인 경우
   if(per_asks > COLOR_STANDARD):    ## 매도호가 물량이 COLOR_STANDARD 이상이면 매도호가 물량에 빨간색 표시
     msg_bids = f"Buy {sum_bids}({per_bids}%) "
     msg_asks = f"{Colors.RED}{sum_asks}({per_asks}%) Sell{Colors.RESET}"
@@ -70,9 +84,28 @@ while(True):
   else:                             ## 이 외엔 컬러를 표시하지 않음
     msg_bids = f"Buy {sum_bids}({per_bids}%)"
     msg_asks = f"{sum_asks}({per_asks}%) Sell"
+
+  # 호가 물량변동(위아래 화살표) 표시
+  if(sum_asks > old_asks):    ## 현재 매도호가 물량이 직전 매도호가 물량보다 큰 경우
+    msg_bids = "↓ " + msg_bids  ### 매수호가 물량 하락
+    msg_asks = msg_asks + " ↑"  ### 매도호가 물량 상승
+  elif(sum_asks < old_asks):  ## 현재 매도호가 물량이 직전 매도호가 물량보다 작은 경우
+    msg_bids = "↑ " + msg_bids  ### 매수호가 물량 상승
+    msg_asks = msg_asks + " ↓"  ### 매도호가 물량 하락
   
   # 메시지 출력
+  current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+  star = ""  ## 알람 조건이 갖춰진 경우 메시지 끝에 별을 붙임
+  if(alarm_condition):
+    star = "🌟"
   print(f"{current_time}: {msg_bids} ↔ {msg_asks} {star}")
 
-  # 잠시 쉰 후 무한루프
+  # 알림 조건 충족 시 로깅
+  if(alarm_condition and IS_LOGGING):
+    msg_log = f"{current_time}: Buy {sum_bids}({per_bids}%) ↔ {sum_asks}({per_asks}%) Sell"
+    logger.info(msg_log)
+
+  # 현재 호가 물량을 Old 변수에 저장한 후 SLEEP_TIME초 간 대기
+  old_asks = sum_asks
+  old_bids = sum_bids
   time.sleep(SLEEP_TIME)

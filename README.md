@@ -95,13 +95,14 @@ IS_LOGGING 값이 True이면 Binance 폴더에 logs 폴더를 만들어놔야 �
 `Binance/scan_orderbook.py` 파일을 열어 설정을 위한 상수 값을 입력합니다.
 
 ```python
-TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")      ## 텔레그렘 봇 토큰
-TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")  ## 텔레그램 봇 아이디
 TICKER = "BTC/USDT"  ## 오더북을 탐지할 바이낸스 Ticker
 COUNT = 250          ## 조사할 호가 개수
 SLEEP_TIME = 0.5     ## 탐지 간격(초)
-ALARM_STANDARD = 85  ## 알람 기준 퍼센트(매수/메도 물량 중 한 쪽이 이 값 이상이면 알림)
-COLOR_STANDARD = 70  ## 컬러 표시 기준 퍼센트(매수/매도 물량 중 한 쪽이 이 값 이상이면 콘솔 창에 컬러 표시)
+ALARM_STANDARD = 80  ## 알람 기준 퍼센트(매수/메도 물량 중 한 쪽이 이 값 이상이면 알림)
+COLOR_STANDARD = 80  ## 컬러 표시 기준 퍼센트(매수/매도 물량 중 한 쪽이 이 값 이상이면 콘솔 창에 컬러 표시)
+IS_ALARMING = True
+IS_LOGGING = True
+LOG_PATH = f"./logs/{current_date.year}-{current_date.month}_Orderbook.log"
 ```
 
 `python3 scan_orderbook.py` 명령어를 실행합니다.

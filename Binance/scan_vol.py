@@ -24,7 +24,6 @@ class Colors:
 
 # 대충 상수...
 load_dotenv()           ## 환경변수 값 가져오기
-current_date = datetime.now()
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")      ## 텔레그렘 봇 토큰
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")  ## 텔레그램 봇 아이디
 TICKER = "BTC/USDT"     ## 거래량을 탐지할 바이낸스 거래소 Ticker
@@ -32,10 +31,11 @@ INTERVAL = "15m"        ## 캔들 유형(15m: 15분봉 / 1h: 1시간봉)
 SLEEP_TIME = 1          ## 탐지 간격(초)
 COUNT = 60              ## 최근 탐지한 거래랑 몇 건으로 평균을 계산할 것인가?
 VOL_VAL_STANDARD = 100  ## 거래량 기준치(거래량이 얼마 이상 발생했을 때 알림을 줄 것인가?)
-LOG_PATH = f"./logs/{current_date.year}-{current_date.month}.log"
 IS_ALARMING = True      ## 소리 알림 여부
 IS_TELEGRAMING = False  ## 텔레그램 알림 여부
 IS_LOGGING = True       ## 로그 기록 여부
+current_date = datetime.now()
+LOG_PATH = f"./logs/{current_date.year}-{current_date.month}_Volume.log"
 
 # 초기화
 bot = telegram.Bot(TELEGRAM_TOKEN)
@@ -47,6 +47,7 @@ list_vol = []            ## 거래량 모음 리스트
 print(f"Binance {TICKER} {INTERVAL} 캔들 거래량을 {SLEEP_TIME}초 간격으로 탐지합니다.")
 print(f"거래량이 {SLEEP_TIME}초간 {VOL_VAL_STANDARD}개 이상 발생하면 알림이 발생합니다.")
 print(f"또한 최근 {COUNT}개 캔들의 평균 거래량도 계산합니다.")
+print("---------------------------------------------------------------------")
 
 # 로그 설정
 if(IS_LOGGING):
@@ -59,7 +60,7 @@ if(IS_LOGGING):
   logger.addHandler(fileHandler)
   logger.setLevel(level=logging.INFO)
   print(f"{log_path} 경로에 로그를 기록합니다.")
-print("--------------------------------------------------")
+print("---------------------------------------------------------------------")
 
 while True:
   try: 
