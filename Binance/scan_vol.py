@@ -24,18 +24,18 @@ class Colors:
 
 # 대충 상수...
 load_dotenv()           ## 환경변수 값 가져오기
+current_date = datetime.now()
+LOG_PATH = f"./logs/{current_date.year}-{current_date.month}_Volume.log"
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")      ## 텔레그렘 봇 토큰
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")  ## 텔레그램 봇 아이디
 TICKER = "BTC/USDT"     ## 거래량을 탐지할 바이낸스 거래소 Ticker
 INTERVAL = "15m"        ## 캔들 유형(15m: 15분봉 / 1h: 1시간봉)
 SLEEP_TIME = 1          ## 탐지 간격(초)
 COUNT = 60              ## 최근 탐지한 거래랑 몇 건으로 평균을 계산할 것인가?
-VOL_VAL_STANDARD = 100  ## 거래량 기준치(거래량이 얼마 이상 발생했을 때 알림을 줄 것인가?)
+VOL_VAL_STANDARD = 50   ## 거래량 기준치(거래량이 얼마 이상 발생했을 때 알림을 줄 것인가?)
 IS_ALARMING = True      ## 소리 알림 여부
 IS_TELEGRAMING = False  ## 텔레그램 알림 여부
 IS_LOGGING = True       ## 로그 기록 여부
-current_date = datetime.now()
-LOG_PATH = f"./logs/{current_date.year}-{current_date.month}_Volume.log"
 
 # 초기화
 bot = telegram.Bot(TELEGRAM_TOKEN)
@@ -87,15 +87,15 @@ while True:
 
     # 순간 거래량 메시지 생성: 상승(GREEN) 및 하락(RED) 색상 표시
     if(diff_price > 0):    ## 가격이 상승한 경우 초록색 표시
-      msg_vol_val = f"{current_time}: {Colors.GREEN}{diff_vol} ({price_per}%){Colors.RESET} "
+      msg_vol_val = f"{current_time}: {Colors.GREEN}{diff_vol} ({new_price}, {price_per}%){Colors.RESET}"
     elif(diff_price < 0):  ## 가격이 하락한 경우 빨간색 표시
-      msg_vol_val = f"{current_time}: {Colors.RED}{diff_vol} ({price_per}%){Colors.RESET}"
+      msg_vol_val = f"{current_time}: {Colors.RED}{diff_vol} ({new_price}, {price_per}%){Colors.RESET}"
     else:                  ## 가격 변동이 없는 경우 색을 표시하지 않음
-      msg_vol_val = f"{current_time}: {diff_vol} ({price_per}%)"
+      msg_vol_val = f"{current_time}: {diff_vol} ({new_price}, {price_per}%)"
     
     # 평균 거래량, 콘솔 출력용 및 푸시 전송용 메시지 생성
-    msg_console = f"{msg_vol_val}{msg_vol_avg}"
-    msg_push = f"{current_time} {TICKER} {INTERVAL} {SLEEP_TIME}초간 발생한 거래량: {diff_vol} ({price_per}%)"
+    msg_console = f"{msg_vol_val} {msg_vol_avg}"
+    msg_push = f"{current_time} {TICKER} {INTERVAL} {SLEEP_TIME}초간 발생한 거래량: {diff_vol} (종가: {new_price}, {price_per}%)"
 
     # 거래량 증가분이 기준치 이상이면 알림
     if(diff_vol >= VOL_VAL_STANDARD):

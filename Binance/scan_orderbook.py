@@ -24,7 +24,7 @@ load_dotenv()        ## 환경변수 값 가져오기
 TICKER = "BTC/USDT"  ## 오더북을 탐지할 바이낸스 Ticker
 COUNT = 250          ## 조사할 호가 개수
 SLEEP_TIME = 0.5     ## 탐지 간격(초)
-ALARM_STANDARD = 80  ## 알람 기준 퍼센트(매수/메도 물량 중 한 쪽이 이 값 이상이면 알림)
+ALARM_STANDARD = 85  ## 알람 기준 퍼센트(매수/메도 물량 중 한 쪽이 이 값 이상이면 알림)
 COLOR_STANDARD = 80  ## 컬러 표시 기준 퍼센트(매수/매도 물량 중 한 쪽이 이 값 이상이면 콘솔 창에 컬러 표시)
 IS_ALARMING = True
 IS_LOGGING = True
