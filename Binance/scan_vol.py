@@ -1,6 +1,7 @@
 from datetime import datetime
 from playsound import playsound
 from dotenv import load_dotenv
+import asyncio
 import time
 import os
 import logging
@@ -102,7 +103,7 @@ while True:
       if(IS_ALARMING):
         threading.Thread(target=playsound, args=("alarm.mp3",), daemon=True).start()
       if(IS_TELEGRAMING):
-        bot.sendMessage(TELEGRAM_CHAT_ID, text=msg_push)
+        asyncio.run(bot.sendMessage(TELEGRAM_CHAT_ID, text=msg_push))
       if(IS_LOGGING):
         logger.info(msg_push)
       msg_console = msg_console + "🌟"
