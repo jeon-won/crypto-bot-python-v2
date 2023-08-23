@@ -15,7 +15,7 @@ Binance/auto_trade.py
 
 TICKER = "BTC/USDT"
 SYMBOL = "BTCUSDT"
-LEVERAGE = 20
+LEVERAGE = 5
 PRICE_ERROR = 50                        # 포지션 예상가 오차 가격(USDT)
 STD_VOLUME_OVERSHOOTING = 200           # 거래량 오버슈팅 기준(코인 수량)
 STD_CANDLE_SIZE = 0.3                   # 포지션 잡을 캔들 크기 기준(%)
