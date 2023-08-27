@@ -29,11 +29,11 @@ current_date = datetime.now()
 LOG_PATH = f"./logs/{current_date.year}-{current_date.month}_Volume.log"
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")      ## 텔레그렘 봇 토큰
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")  ## 텔레그램 봇 아이디
-TICKER = "BTC/USDT"     ## 거래량을 탐지할 바이낸스 거래소 Ticker
+SYMBOL = "BTC/USDT"     ## 거래량을 탐지할 바이낸스 거래소 SYMBOL
 INTERVAL = "15m"        ## 캔들 유형(15m: 15분봉 / 1h: 1시간봉)
 SLEEP_TIME = 1          ## 탐지 간격(초)
 COUNT = 60              ## 최근 탐지한 거래랑 몇 건으로 평균을 계산할 것인가?
-VOL_VAL_STANDARD = 200   ## 거래량 기준치(거래량이 얼마 이상 발생했을 때 알림을 줄 것인가?)
+VOL_VAL_STANDARD = 300   ## 거래량 기준치(거래량이 얼마 이상 발생했을 때 알림을 줄 것인가?)
 IS_ALARMING = True      ## 소리 알림 여부
 IS_TELEGRAMING = False  ## 텔레그램 알림 여부
 IS_LOGGING = True       ## 로그 기록 여부
@@ -47,11 +47,11 @@ async def main():
             'defaultType': 'future'
         }
     })
-    ohlcv = binance.fetch_ohlcv(TICKER, INTERVAL, limit=1)  ## 시가, 고가, 저자, 종가, 거래량(Open, High, Low, Close, Volume) 얻어오기
+    ohlcv = binance.fetch_ohlcv(SYMBOL, INTERVAL, limit=1)  ## 시가, 고가, 저자, 종가, 거래량(Open, High, Low, Close, Volume) 얻어오기
     old_price = ohlcv[0][4]  ## 프로그램 실행 시점 기준 현재 가격
     old_vol = ohlcv[0][5]    ## 프로그램 실행 시점 기준 현재 거래량
     list_vol = []            ## 거래량 모음 리스트
-    print(f"Binance {TICKER} {INTERVAL} 캔들 거래량을 {SLEEP_TIME}초 간격으로 탐지합니다.")
+    print(f"Binance {SYMBOL} {INTERVAL} 캔들 거래량을 {SLEEP_TIME}초 간격으로 탐지합니다.")
     print(f"거래량이 {SLEEP_TIME}초간 {VOL_VAL_STANDARD}개 이상 발생하면 알림이 발생합니다.")
     print(f"또한 최근 {COUNT}개 캔들의 평균 거래량도 계산합니다.")
     print("---------------------------------------------------------------------")
@@ -75,7 +75,7 @@ async def main():
     while True:
       try: 
         # 주요 변수
-        ohlcv = binance.fetch_ohlcv(TICKER, INTERVAL, limit=1)  ## 시가, 고가, 저자, 종가, 거래량(Open, High, Low, Close, Volume)
+        ohlcv = binance.fetch_ohlcv(SYMBOL, INTERVAL, limit=1)  ## 시가, 고가, 저자, 종가, 거래량(Open, High, Low, Close, Volume)
         new_price = ohlcv[0][4]  ## 현재 가격
         new_vol = ohlcv[0][5]    ## 현재 거래량
         diff_price = new_price - old_price      ## 가격 증감분
@@ -105,7 +105,7 @@ async def main():
         
         # 평균 거래량, 콘솔 출력용 및 푸시 전송용 메시지 생성
         msg_console = f"{msg_vol_val} {msg_vol_avg}"
-        msg_push = f"{current_time} {TICKER} {INTERVAL} {SLEEP_TIME}초간 발생한 거래량: {diff_vol} (종가: {new_price}, {price_per}%)"
+        msg_push = f"{current_time} {SYMBOL} {INTERVAL} {SLEEP_TIME}초간 발생한 거래량: {diff_vol} (종가: {new_price}, {price_per}%)"
 
         # 거래량 증가분이 기준치 이상이면 알림
         if(diff_vol >= VOL_VAL_STANDARD):
